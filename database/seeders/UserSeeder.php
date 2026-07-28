@@ -15,7 +15,7 @@ class UserSeeder extends Seeder
         $dentistRole = Role::where('name', 'dentist')->first();
         $tutorRole = Role::where('name', 'tutor')->first();
 
-        // 1. Usuario Administrador
+        // Administrador
         $admin = User::create([
             'name' => 'Administrador General',
             'email' => 'admin@clinicadental.com',
@@ -23,7 +23,7 @@ class UserSeeder extends Seeder
         ]);
         $admin->roles()->attach($adminRole);
 
-        // 2. Usuario Odontopediatra
+        // Odontopediatra
         $dentist = User::create([
             'name' => 'Dra. María González',
             'email' => 'dentista@clinicadental.com',
@@ -31,7 +31,7 @@ class UserSeeder extends Seeder
         ]);
         $dentist->roles()->attach($dentistRole);
 
-        // 3. Usuario Tutor (Padre de familia)
+        // (Padre de familia)
         $tutor = User::create([
             'name' => 'Juan Perez',
             'email' => 'tutor@gmail.com',
