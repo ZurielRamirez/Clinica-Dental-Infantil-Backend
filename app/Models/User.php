@@ -37,6 +37,16 @@ class User extends Authenticatable
         return $this->belongsToMany(Role::class);
     }
 
+    public function hasRole(string $role): bool
+    {
+    return $this->roles()->where('name', $role)->exists();
+    }
+    
+    public function patients()
+    {
+    return $this->hasMany(Patient::class, 'tutor_id');
+    }
+
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(new ResetPasswordNotification($token));
