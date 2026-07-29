@@ -20,6 +20,7 @@ public function run(): void
         UserSeeder::class,
         TreatmentSeeder::class,
         PatientSeeder::class,
+        AppointmentSeeder::class,
     ]);
 }
 }
