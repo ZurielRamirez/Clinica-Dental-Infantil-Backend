@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TreatmentRequest;
+use App\Http\Resources\TreatmentResource;
 use App\Models\Treatment;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -22,7 +23,7 @@ class TreatmentController extends Controller
 
         $treatments = $query->paginate(10);
 
-        return response()->json($treatments);
+        return TreatmentResource::collection($treatments)->response();
     }
 
     public function store(TreatmentRequest $request): JsonResponse
@@ -31,14 +32,14 @@ class TreatmentController extends Controller
 
         $treatment = Treatment::create($request->validated());
 
-        return response()->json($treatment, 201);
+        return (new TreatmentResource($treatment))->response()->setStatusCode(201);
     }
 
     public function show(Treatment $treatment): JsonResponse
     {
         $this->authorize('view', $treatment);
 
-        return response()->json($treatment);
+        return (new TreatmentResource($treatment))->response();
     }
 
     public function update(TreatmentRequest $request, Treatment $treatment): JsonResponse
@@ -47,7 +48,7 @@ class TreatmentController extends Controller
 
         $treatment->update($request->validated());
 
-        return response()->json($treatment);
+        return (new TreatmentResource($treatment))->response();
     }
 
     public function destroy(Treatment $treatment): JsonResponse

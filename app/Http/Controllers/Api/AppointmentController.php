@@ -1,8 +1,10 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+
 use App\Models\Patient;
 use App\Http\Requests\AppointmentRequest;
+use App\Http\Resources\AppointmentResource;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use Illuminate\Http\Request;
@@ -16,7 +18,7 @@ class AppointmentController extends Controller
 
         $user = $request->user();
 
-        $query = Appointment::with('patient');
+        $query = Appointment::with(['patient', 'dentist']);
 
         if ($user->hasRole('dentist')) {
             $query->where('dentist_id', $user->id);
@@ -28,72 +30,72 @@ class AppointmentController extends Controller
 
         $appointments = $query->paginate(10);
 
-        return response()->json($appointments);
+        return AppointmentResource::collection($appointments)->response();
     }
 
-public function store(AppointmentRequest $request): JsonResponse
-{
-    $this->authorize('create', Appointment::class);
+    public function store(AppointmentRequest $request): JsonResponse
+    {
+        $this->authorize('create', Appointment::class);
 
-    $data = $request->validated();
-    $user = $request->user();
+        $data = $request->validated();
+        $user = $request->user();
 
-    if ($user->hasRole('tutor')) {
-        $patient = Patient::findOrFail($data['patient_id']);
+        if ($user->hasRole('tutor')) {
+            $patient = Patient::findOrFail($data['patient_id']);
 
-        if ($patient->tutor_id !== $user->id) {
-            abort(403, 'No puedes agendar citas para pacientes que no son tuyos.');
+            if ($patient->tutor_id !== $user->id) {
+                abort(403, 'No puedes agendar citas para pacientes que no son tuyos.');
+            }
         }
+
+        $yaOcupado = Appointment::where('dentist_id', $data['dentist_id'])
+            ->where('appointment_date', $data['appointment_date'])
+            ->exists();
+
+        if ($yaOcupado) {
+            return response()->json([
+                'message' => 'El dentista ya tiene una cita agendada en ese horario.',
+            ], 422);
+        }
+
+        $data['status'] = 'pending';
+
+        $appointment = Appointment::create($data);
+
+        return (new AppointmentResource($appointment))->response()->setStatusCode(201);
     }
 
-    $yaOcupado = Appointment::where('dentist_id', $data['dentist_id'])
-        ->where('appointment_date', $data['appointment_date'])
-        ->exists();
+    public function show(Appointment $appointment): JsonResponse
+    {
+        $this->authorize('view', $appointment);
 
-    if ($yaOcupado) {
-        return response()->json([
-            'message' => 'El dentista ya tiene una cita agendada en ese horario.',
-        ], 422);
+        return (new AppointmentResource($appointment->load('patient', 'dentist', 'treatments')))->response();
     }
 
-    $data['status'] = 'pending';
+    public function update(AppointmentRequest $request, Appointment $appointment): JsonResponse
+    {
+        $this->authorize('update', $appointment);
 
-    $appointment = Appointment::create($data);
+        $appointment->update($request->validated());
 
-    return response()->json($appointment, 201);
-}
+        return (new AppointmentResource($appointment))->response();
+    }
 
-public function show(Appointment $appointment): JsonResponse
-{
-    $this->authorize('view', $appointment);
+    public function cancel(Appointment $appointment): JsonResponse
+    {
+        $this->authorize('cancel', $appointment);
 
-    return response()->json($appointment->load('patient', 'treatments'));
-}
+        $appointment->update(['status' => 'cancelled']);
 
-public function update(AppointmentRequest $request, Appointment $appointment): JsonResponse
-{
-    $this->authorize('update', $appointment);
+        return (new AppointmentResource($appointment))->response();
+    }
 
-    $appointment->update($request->validated());
+    public function destroy(Appointment $appointment): JsonResponse
+    {
+        $this->authorize('delete', $appointment);
 
-    return response()->json($appointment);
-}
+        $appointment->delete();
 
-public function cancel(Appointment $appointment): JsonResponse
-{
-    $this->authorize('cancel', $appointment);
-
-    $appointment->update(['status' => 'cancelled']);
-
-    return response()->json($appointment);
-}
-
-public function destroy(Appointment $appointment): JsonResponse
-{
-    $this->authorize('delete', $appointment);
-
-    $appointment->delete();
-
-    return response()->json(null, 204);
-}
+        return response()->json(null, 204);
+    }
 }
