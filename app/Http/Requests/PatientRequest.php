@@ -13,16 +13,18 @@ class PatientRequest extends FormRequest
 
     public function rules(): array
     {
+        $isUpdate = $this->isMethod('PATCH');
+
         $rules = [
-            'first_name' => ['required', 'string', 'max:255'],
-            'last_name' => ['required', 'string', 'max:255'],
-            'birth_date' => ['required', 'date', 'before:today'],
+            'first_name' => [$isUpdate ? 'sometimes' : 'required', 'string', 'max:255'],
+            'last_name' => [$isUpdate ? 'sometimes' : 'required', 'string', 'max:255'],
+            'birth_date' => [$isUpdate ? 'sometimes' : 'required', 'date', 'before:today'],
             'allergies' => ['nullable', 'string'],
             'medical_notes' => ['nullable', 'string'],
         ];
 
         if ($this->user()->hasRole('admin')) {
-            $rules['tutor_id'] = ['required', 'exists:users,id'];
+            $rules['tutor_id'] = [$isUpdate ? 'sometimes' : 'required', 'exists:users,id'];
         }
 
         return $rules;

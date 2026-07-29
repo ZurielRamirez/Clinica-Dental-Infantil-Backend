@@ -19,6 +19,9 @@ Route::middleware('auth:sanctum')->group(function () {
     //Prueba Policy
     Route::get('/patients', [PatientController::class, 'index']);
     Route::post('/patients', [PatientController::class, 'store']);
+    Route::get('/patients/{patient}', [PatientController::class, 'show']);
+    Route::patch('/patients/{patient}', [PatientController::class, 'update']);
+    Route::delete('/patients/{patient}', [PatientController::class, 'destroy']);
 
     //probar el middleware
     Route::middleware('role:admin')->group(function () {

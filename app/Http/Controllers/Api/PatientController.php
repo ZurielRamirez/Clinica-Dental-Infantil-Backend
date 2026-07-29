@@ -35,7 +35,7 @@ class PatientController extends Controller
         return response()->json($patients);
     }
     public function store(PatientRequest $request): JsonResponse
-{
+    {
     $this->authorize('create', Patient::class);
 
     $data = $request->validated();
@@ -47,5 +47,33 @@ class PatientController extends Controller
     $patient = Patient::create($data);
 
     return response()->json($patient, 201);
+    }
+    public function show(Patient $patient): JsonResponse
+    {
+        $this->authorize('view', $patient);
+
+        return response()->json($patient);
+    }
+    public function update(PatientRequest $request, Patient $patient): JsonResponse
+{
+    $this->authorize('update', $patient);
+
+    $data = $request->validated();
+
+    if ($request->user()->hasRole('tutor')) {
+        unset($data['tutor_id']);
+    }
+
+    $patient->update($data);
+
+    return response()->json($patient);
+}
+public function destroy(Patient $patient): JsonResponse
+{
+    $this->authorize('delete', $patient);
+
+    $patient->delete();
+
+    return response()->json(null, 204);
 }
 }
