@@ -1,0 +1,28 @@
+info:
+  name: Register
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: https://api.dentalinfantiloaxaca.xyz/api/register
+  headers:
+    - name: Key
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Usuario Prueba Bruno",
+        "email": "pruebabruno@gmail.com",
+        "phone": "+5219511112222",
+        "password": "Password123!",
+        "password_confirmation": "Password123!"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

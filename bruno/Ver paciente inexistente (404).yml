@@ -1,0 +1,17 @@
+info:
+  name: Ver paciente inexistente (404)
+  type: http
+  seq: 18
+
+http:
+  method: GET
+  url: https://api.dentalinfantiloaxaca.xyz/api/patients/9999
+  auth:
+    type: bearer
+    token: 4|sUPyqpYN1HUr4yCfVHoQdZajLJ9mnZFb52WMZ2Ir3273ff8e
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
