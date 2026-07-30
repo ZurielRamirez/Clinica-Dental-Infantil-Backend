@@ -10,6 +10,8 @@ use App\Models\Appointment;
 use App\Services\TwilioService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Mail\AppointmentMail;
+use Illuminate\Support\Facades\Mail;
 
 class AppointmentController extends Controller
 {
@@ -80,17 +82,25 @@ private function notificarConfirmacion(Appointment $appointment): void
 {
     $tutor = $appointment->patient->tutor;
 
-    if (!$tutor || !$tutor->phone) {
+    if (!$tutor) {
         return;
     }
 
-    $fecha = $appointment->appointment_date->format('d/m/Y H:i');
-    $mensaje = "Hola {$tutor->name}, tu cita para {$appointment->patient->first_name} quedó agendada para el {$fecha}. - Clínica Dental Infantil";
+    if ($tutor->phone) {
+        $fecha = $appointment->appointment_date->format('d/m/Y H:i');
+        $mensaje = "Hola {$tutor->name}, tu cita para {$appointment->patient->first_name} quedó agendada para el {$fecha}. - Clínica Dental Infantil";
+
+        try {
+            $this->twilio->sendSms($tutor->phone, $mensaje);
+        } catch (\Exception $e) {
+            \Log::error('Error enviando SMS de confirmación: ' . $e->getMessage());
+        }
+    }
 
     try {
-        $this->twilio->sendSms($tutor->phone, $mensaje);
+        Mail::to($tutor->email)->send(new AppointmentMail($appointment, 'confirmacion'));
     } catch (\Exception $e) {
-        \Log::error('Error enviando SMS de confirmación: ' . $e->getMessage());
+        \Log::error('Error enviando correo de confirmación: ' . $e->getMessage());
     }
 }
     public function show(Appointment $appointment): JsonResponse
@@ -125,17 +135,25 @@ private function notificarCancelacion(Appointment $appointment): void
 {
     $tutor = $appointment->patient->tutor;
 
-    if (!$tutor || !$tutor->phone) {
+    if (!$tutor) {
         return;
     }
 
-    $fecha = $appointment->appointment_date->format('d/m/Y H:i');
-    $mensaje = "Hola {$tutor->name}, tu cita para {$appointment->patient->first_name} programada para el {$fecha} ha sido cancelada. - Clínica Dental Infantil";
+    if ($tutor->phone) {
+        $fecha = $appointment->appointment_date->format('d/m/Y H:i');
+        $mensaje = "Hola {$tutor->name}, tu cita para {$appointment->patient->first_name} programada para el {$fecha} ha sido cancelada. - Clínica Dental Infantil";
+
+        try {
+            $this->twilio->sendSms($tutor->phone, $mensaje);
+        } catch (\Exception $e) {
+            \Log::error('Error enviando SMS de cancelación: ' . $e->getMessage());
+        }
+    }
 
     try {
-        $this->twilio->sendSms($tutor->phone, $mensaje);
+        Mail::to($tutor->email)->send(new AppointmentMail($appointment, 'cancelacion'));
     } catch (\Exception $e) {
-        \Log::error('Error enviando SMS de cancelación: ' . $e->getMessage());
+        \Log::error('Error enviando correo de cancelación: ' . $e->getMessage());
     }
 }
 
@@ -147,4 +165,5 @@ private function notificarCancelacion(Appointment $appointment): void
 
         return response()->json(null, 204);
     }
+
 }
