@@ -80,8 +80,9 @@ class AuthController extends Controller
         ]);
     }
 
-    public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
-    {
+public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
+{
+    try {
         $status = Password::sendResetLink(
             $request->only('email')
         );
@@ -95,7 +96,16 @@ class AuthController extends Controller
         return response()->json([
             'message' => __($status),
         ]);
+    } catch (ValidationException $e) {
+        throw $e;
+    } catch (\Throwable $e) {
+        \Log::error('Error enviando correo de recuperación: ' . $e->getMessage());
+
+        return response()->json([
+            'message' => 'Se procesó tu solicitud. Si el correo existe en nuestro sistema, recibirás un enlace en breve.',
+        ]);
     }
+}
 
     public function resetPassword(ResetPasswordRequest $request): JsonResponse
     {
