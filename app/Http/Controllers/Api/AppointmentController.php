@@ -92,14 +92,14 @@ private function notificarConfirmacion(Appointment $appointment): void
 
         try {
             $this->twilio->sendSms($tutor->phone, $mensaje);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             \Log::error('Error enviando SMS de confirmación: ' . $e->getMessage());
         }
     }
 
     try {
         Mail::to($tutor->email)->send(new AppointmentMail($appointment, 'confirmacion'));
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
         \Log::error('Error enviando correo de confirmación: ' . $e->getMessage());
     }
 }
@@ -145,14 +145,14 @@ private function notificarCancelacion(Appointment $appointment): void
 
         try {
             $this->twilio->sendSms($tutor->phone, $mensaje);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             \Log::error('Error enviando SMS de cancelación: ' . $e->getMessage());
         }
     }
 
     try {
         Mail::to($tutor->email)->send(new AppointmentMail($appointment, 'cancelacion'));
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
         \Log::error('Error enviando correo de cancelación: ' . $e->getMessage());
     }
 }
