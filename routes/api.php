@@ -23,6 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/appointments/{appointment}', [AppointmentController::class, 'update']);
     Route::patch('/appointments/{appointment}/cancel', [AppointmentController::class, 'cancel']);
     Route::delete('/appointments/{appointment}', [AppointmentController::class, 'destroy']);
+   
 
     Route::get('/treatments', [TreatmentController::class, 'index']);
     Route::post('/treatments', [TreatmentController::class, 'store']);
@@ -36,7 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/patients/{patient}', [PatientController::class, 'show']);
     Route::patch('/patients/{patient}', [PatientController::class, 'update']);
     Route::delete('/patients/{patient}', [PatientController::class, 'destroy']);
-
+    Route::get('/dentists', [UserController::class, 'dentists']);
     //probar el middleware
     Route::middleware('role:admin')->group(function () {
     Route::get('/users', [UserController::class, 'index']);
