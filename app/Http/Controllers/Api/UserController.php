@@ -27,4 +27,12 @@ class UserController extends Controller
 
         return (new UserResource($user->load('roles')))->response();
     }
+public function dentists(): JsonResponse
+{
+    $dentists = User::whereHas('roles', function ($q) {
+        $q->where('name', 'dentist');
+    })->where('active', true)->get(['id', 'name']);
+
+    return response()->json(['data' => $dentists]);
+}
 }
