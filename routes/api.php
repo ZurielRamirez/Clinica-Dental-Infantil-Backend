@@ -40,5 +40,6 @@ Route::middleware('auth:sanctum')->group(function () {
     //probar el middleware
     Route::middleware('role:admin')->group(function () {
     Route::get('/users', [UserController::class, 'index']);
+    Route::patch('/users/{user}/toggle-active', [UserController::class, 'toggleActive']);
     });
 });

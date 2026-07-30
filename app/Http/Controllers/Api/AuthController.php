@@ -39,24 +39,30 @@ class AuthController extends Controller
     }
 
     public function login(LoginRequest $request): JsonResponse
-    {
-        $user = User::where('email', $request->email)->first();
+{
+    $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['Las credenciales proporcionadas son incorrectas.'],
-            ]);
-        }
-
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'message' => 'Inicio de sesión exitoso',
-            'user' => $user->load('roles'),
-            'access_token' => $token,
-            'token_type' => 'Bearer',
+    if (!$user || !Hash::check($request->password, $user->password)) {
+        throw ValidationException::withMessages([
+            'email' => ['Las credenciales proporcionadas son incorrectas.'],
         ]);
     }
+
+    if (!$user->active) {
+        throw ValidationException::withMessages([
+            'email' => ['Esta cuenta ha sido desactivada. Contacta al administrador.'],
+        ]);
+    }
+
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'message' => 'Inicio de sesión exitoso',
+        'user' => $user->load('roles'),
+        'access_token' => $token,
+        'token_type' => 'Bearer',
+    ]);
+}
 
     public function me(Request $request): JsonResponse
     {
